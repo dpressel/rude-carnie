@@ -108,7 +108,7 @@ tensorboard --logdir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_
 ```
 Then navigate to http://127.0.0.1:6006/ in your browser to see results.  The first tab (events) shows the loss over time, and the second shows the images that the network is seeing during training on batches.
 
-** Evaluate the model **
+#### Evaluate the model
 
 The evaluation program is written to be run alongside the training or after the fact.  If you run it after the fact, you can specify a list of checkpoint steps to evaluate in sequence.  If you run while training is working, it will periodically rerun itself on the latest checkpoint.
 
