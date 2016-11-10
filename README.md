@@ -1,15 +1,15 @@
 Rude Carnie: Age and Gender Deep Learning with TensorFlow
 ==========================================================
 
-** Goal **
+## Goal
 
 Do face detection and age and gender classification on pictures
 
-** Name **
+### Name
 
 http://www.someecards.com/news/getting-old/howoldnet-takes-your-picture-and-uses-algorithms-to-guess-your-age-like-a-rude-carnie/
 
-** Currently Supported Models **
+### Currently Supported Models
 
  - _Gil Levi and Tal Hassner, Age and Gender Classification Using Convolutional Neural Networks, IEEE Workshop on Analysis and Modeling of Faces and Gestures (AMFG), at the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), Boston, June 2015_
 
@@ -18,9 +18,7 @@ https://github.com/GilLevi/AgeGenderDeepLearning
 
  - Inception v3 with fine-tuning
 
-* Running *
-
-** Running without retraining **
+### Running
 
 There are several ways to use a pre-existing checkpoint to do age or gender classification.  By default, the code will simply assume that the image you provided has a face in it, and will run that image through a multi-pass classification using the corners and center.
 
@@ -50,11 +48,11 @@ Additionally, if you have an image with one or more frontal faces, you can run a
 python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 8000 --filename /home/dpressel/Downloads/portraits/halloween15.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
 ```
 
-* Training *
+### Training
 
 You can use your own training data if you wish.  This is a little easier to do with gender, since there are many ways that you could come up with a training set for this, but it has been developed specifically with the Adience corpus in mind, and uses the pre-splits created by Levi and Hassner.
 
-** Download Adience data and folds **
+#### Download Adience data and folds
 
 Get the folds, we dont need to run their preprocessing scripts since we are doing this in the preproc.py script using tensorflow
 
@@ -62,7 +60,7 @@ Get the folds, we dont need to run their preprocessing scripts since we are doin
 git clone https://github.com/GilLevi/AgeGenderDeepLearning
 ```
 
-** Pre-process data for training **
+#### Pre-process data for training
 
 First you will need to preprocess the data using preproc.py.  This assumes that there is a directory that is passed for an absolute directory, as well as a file containing a list of the training data images and the label itself, and the validation data, and test data if applicable.  The procproc.py program generates 'shards' for each of the datasets, each containing JPEG encoded RGB images of size 256x256
 
@@ -93,7 +91,7 @@ Gender is done much the same way:
 python2.7 preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list gender_train.txt --valid_list gender_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0
 ```
 
-** Train the model **
+#### Train the model
 
 Now that we have generated the training and validation shards, we can start training the program.  Here is a simple way to call the driver program to run for 10,000 iterations with a batch size of 128, and using SGD with momentum to train:
 
