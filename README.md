@@ -100,7 +100,7 @@ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fol
 
 ```
 
-Gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.  Here let's train gender for 10k steps
+Once again, gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.  Here let's train gender for 10k steps
 
 ```
 
