@@ -100,6 +100,14 @@ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fol
 
 ```
 
+Gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.  Here let's train gender for 10k steps
+
+```
+
+python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 10000
+
+```
+
 You can easily monitor the job run by launching tensorboard with the --logdir specified in the program's initial output:
 
 ```
