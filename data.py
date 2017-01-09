@@ -8,6 +8,16 @@ import os
 import numpy as np
 import tensorflow as tf
 
+from distutils.version import LooseVersion
+
+VERSION_GTE_0_12_0 = LooseVersion(tf.__version__) >= LooseVersion('0.12.0')
+
+# Name change in TF v 0.12.0
+if VERSION_GTE_0_12_0:
+    standardize_image = tf.image.per_image_standardization
+else:
+    standardize_image = tf.image.per_image_whitening
+
 def data_files(data_dir, subset):
     """Returns a python list of all (sharded) data subset files.
     Returns:

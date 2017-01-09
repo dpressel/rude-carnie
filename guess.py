@@ -12,6 +12,8 @@ from model import select_model, get_checkpoint
 from utils import ImageCoder, make_batch, FaceDetector
 import os
 import json
+import csv
+
 RESIZE_FINAL = 227
 GENDER_LIST =['M','F']
 AGE_LIST = ['(0, 2)','(4, 6)','(8, 12)','(15, 20)','(25, 32)','(38, 43)','(48, 53)','(60, 100)']
@@ -27,7 +29,10 @@ tf.app.flags.DEFINE_string('device_id', '/cpu:0',
                            'What processing unit to execute inference on')
 
 tf.app.flags.DEFINE_string('filename', '',
-                           'File to processs')
+                           'File (Image) or File list (Text/No header TSV) to process')
+
+tf.app.flags.DEFINE_string('target', '',
+                           'CSV file containing the filename processed along with best guess and score')
 
 tf.app.flags.DEFINE_string('checkpoint', 'checkpoint',
                           'Checkpoint basename')
@@ -43,6 +48,11 @@ tf.app.flags.DEFINE_string('face_detection_model', '', 'Do frontal face detectio
 
 FLAGS = tf.app.flags.FLAGS
 
+def one_of(fname, types):
+    for ty in types:
+        if fname.endswith('.' + ty):
+            return True
+    return False
 
 def classify(sess, label_list, softmax_output, coder, images, image_file):
 
@@ -58,8 +68,8 @@ def classify(sess, label_list, softmax_output, coder, images, image_file):
         
     output /= batch_sz
     best = np.argmax(output)
-        
-    print('Guess @ 1 %s, prob = %.2f' % (label_list[best], output[best]))
+    best_choice = (label_list[best], output[best])
+    print('Guess @ 1 %s, prob = %.2f' % best_choice)
     
     nlabels = len(label_list)
     if nlabels > 2:
@@ -67,8 +77,12 @@ def classify(sess, label_list, softmax_output, coder, images, image_file):
         second_best = np.argmax(output)
 
         print('Guess @ 2 %s, prob = %.2f' % (label_list[second_best], output[second_best]))
-
+    return best_choice
          
+def batchlist(srcfile):
+    reader = csv.DictReader(srcfile)
+    return [row[0] for row in reader]
+
 def main(argv=None):  # pylint: disable=unused-argument
 
 
@@ -105,13 +119,27 @@ def main(argv=None):  # pylint: disable=unused-argument
             face_files, rectangles = face_detect.run(FLAGS.filename)
             files += face_files
 
+        # Support a batch mode if no face detection model
         if len(files) == 0:
             files.append(FLAGS.filename)
+            # If it happens to be a list file, read the list and clobber the files
+            if one_of(FLAGS.filename, ('csv', 'tsv', 'txt')):
+                files = batchlist(FLAGS.filename)
 
+        writer = None
+        if FLAGS.target:
+            print('Creating output file %s' % FLAGS.target)
+            output = open(FLAGS.target, 'w')
+            writer = csv.writer(output)
+            writer.writerow(('file', 'label', 'score'))
 
         for f in files:
-            classify(sess, label_list, softmax_output, coder, images, f)
+            best_choice = classify(sess, label_list, softmax_output, coder, images, f)
+            if writer is not None:
+                writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
 
+        if output is not None:
+            output.close()
         
 if __name__ == '__main__':
     tf.app.run()

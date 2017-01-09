@@ -8,7 +8,7 @@ import cv2
 import sys
 import math
 import time
-from data import inputs
+from data import inputs, standardize_image
 import numpy as np
 import tensorflow as tf
 
@@ -96,7 +96,7 @@ def _is_png(filename):
     boolean indicating if the image is a PNG.
     """
     return '.png' in filename
-
+        
 def make_batch(filename, coder, multicrop):
     """Process a single image file.
     Args:
@@ -123,7 +123,7 @@ def make_batch(filename, coder, multicrop):
     if multicrop is False:
         print('Running a single image')
         crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-        image = tf.image.per_image_whitening(crop)
+        image = whiten(crop)
 
         crops.append(image)
     else:
@@ -135,7 +135,7 @@ def make_batch(filename, coder, multicrop):
         wl = w - RESIZE_FINAL
 
         crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-        crops.append(tf.image.per_image_whitening(crop))
+        crops.append(standardize_image(crop))
         crops.append(tf.image.flip_left_right(crop))
         print(hl, wl)
 
@@ -145,9 +145,9 @@ def make_batch(filename, coder, multicrop):
             ch, cw = corner
             print(ch, cw)
             cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
-            crops.append(tf.image.per_image_whitening(cropped))
+            crops.append(standardize_image(cropped))
             flipped = tf.image.flip_left_right(cropped)
-            crops.append(tf.image.per_image_whitening(flipped))
+            crops.append(standardize_image(flipped))
         
     image_batch = tf.pack(crops)
     return image_batch
