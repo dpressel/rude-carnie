@@ -84,7 +84,6 @@ class ImageCoder(object):
 
         assert len(image.shape) == 3
         assert image.shape[2] == 3
-        print(image.shape)
         return image
         
 
@@ -123,27 +122,24 @@ def make_batch(filename, coder, multicrop):
     if multicrop is False:
         print('Running a single image')
         crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-        image = whiten(crop)
+        image = standardize_image(crop)
 
         crops.append(image)
     else:
         print('Running multi-cropped image')
         h = image.shape[0]
         w = image.shape[1]
-        print(h, w)
         hl = h - RESIZE_FINAL
         wl = w - RESIZE_FINAL
 
         crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
         crops.append(standardize_image(crop))
         crops.append(tf.image.flip_left_right(crop))
-        print(hl, wl)
 
         corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
 
         for corner in corners:
             ch, cw = corner
-            print(ch, cw)
             cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
             crops.append(standardize_image(cropped))
             flipped = tf.image.flip_left_right(cropped)
