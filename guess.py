@@ -54,6 +54,14 @@ def one_of(fname, types):
             return True
     return False
 
+def resolve_file(fname):
+    if os.path.exists(fname): return fname
+    for suffix in ('.jpg', '.png', '.JPG', '.PNG', '.jpeg'):
+        cand = fname + suffix
+        if os.path.exists(cand):
+            return cand
+    return None
+
 def classify(sess, label_list, softmax_output, coder, images, image_file):
 
     print('Running file %s' % image_file)
@@ -138,10 +146,18 @@ def main(argv=None):  # pylint: disable=unused-argument
             writer = csv.writer(output)
             writer.writerow(('file', 'label', 'score'))
 
+
         for f in files:
-            best_choice = classify(sess, label_list, softmax_output, coder, images, f)
-            if writer is not None:
-                writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
+            image_file = resolve_file(f)
+            
+            if image_file is None: continue
+
+            try:
+                best_choice = classify(sess, label_list, softmax_output, coder, images, image_file)
+                if writer is not None:
+                    writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
+            except Exception:
+                print('Failed to run image %s ' % image_file)
 
         if output is not None:
             output.close()
