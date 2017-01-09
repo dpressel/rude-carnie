@@ -80,8 +80,13 @@ def classify(sess, label_list, softmax_output, coder, images, image_file):
     return best_choice
          
 def batchlist(srcfile):
-    reader = csv.DictReader(srcfile)
-    return [row[0] for row in reader]
+    with open(srcfile, 'r') as csvfile:
+        reader = csv.reader(csvfile)
+        if srcfile.endswith('.csv') or srcfile.endswith('.tsv'):
+            print('skipping header')
+            reader.next()
+        
+        return [row[0] for row in reader]
 
 def main(argv=None):  # pylint: disable=unused-argument
 
@@ -127,6 +132,7 @@ def main(argv=None):  # pylint: disable=unused-argument
                 files = batchlist(FLAGS.filename)
 
         writer = None
+        output = None
         if FLAGS.target:
             print('Creating output file %s' % FLAGS.target)
             output = open(FLAGS.target, 'w')
