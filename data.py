@@ -83,38 +83,8 @@ def distort_image(image, height, width):
   return distorted_image
 
 
-def get_image_shape(image):
-    if image.get_shape().is_fully_defined():
-        return image.get_shape().as_list()
-    else:
-        return tf.unpack(array_ops.shape(image))
-        static_shape = image.get_shape().with_rank(3).as_list()
-        dynamic_shape = tf.unpack(tf.shape(image), 3)
-        return [s if s is not None else d
-                for s, d in zip(static_shape, dynamic_shape)]
-
-
-
 def _is_tensor(x):
     return isinstance(x, (tf.Tensor, tf.Variable))
-
-
-def _crop_to_bounding_box(image, offset_height, offset_width, target_height,
-                         target_width):
-    image = tf.convert_to_tensor(image, name='image')
-
-    height, width, depth = get_image_shape(image)
-
-    cropped = tf.slice(
-        image,
-        tf.pack([offset_height, offset_width, 0]),
-        tf.pack([target_height, target_width, -1]))
-
-    cropped_shape = [None if _is_tensor(i) else i
-                     for i in [target_height, target_width, depth]]
-    cropped.set_shape(cropped_shape)
-    
-    return cropped
 
 def eval_image(image, height, width):
     return tf.image.resize_images(image, [height, width])

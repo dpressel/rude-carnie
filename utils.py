@@ -137,13 +137,12 @@ def make_batch(filename, coder, multicrop):
         crops.append(tf.image.flip_left_right(crop))
 
         corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
-
         for corner in corners:
             ch, cw = corner
             cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
             crops.append(standardize_image(cropped))
             flipped = tf.image.flip_left_right(cropped)
             crops.append(standardize_image(flipped))
-        
-    image_batch = tf.pack(crops)
+
+    image_batch = tf.stack(crops)
     return image_batch

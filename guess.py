@@ -66,7 +66,6 @@ def classify(sess, label_list, softmax_output, coder, images, image_file):
 
     print('Running file %s' % image_file)
     image_batch = make_batch(image_file, coder, not FLAGS.single_look)
-    
     batch_results = sess.run(softmax_output, feed_dict={images:image_batch.eval()})
     output = batch_results[0]
     batch_sz = batch_results.shape[0]
@@ -156,7 +155,8 @@ def main(argv=None):  # pylint: disable=unused-argument
                 best_choice = classify(sess, label_list, softmax_output, coder, images, image_file)
                 if writer is not None:
                     writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
-            except Exception:
+            except Exception as e:
+                print(e)
                 print('Failed to run image %s ' % image_file)
 
         if output is not None:
