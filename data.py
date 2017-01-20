@@ -121,7 +121,7 @@ def eval_image(image, height, width):
 
 def data_normalization(image):
 
-    image = tf.image.per_image_whitening(image)
+    image = standardize_image(image)
 
     return image
 
@@ -242,7 +242,7 @@ def batch_inputs(data_dir, batch_size, image_size, train, num_preprocess_threads
     images = tf.reshape(images, shape=[batch_size, image_size, image_size, 3])
 
     # Display the training images in the visualizer.
-    tf.image_summary('images', images, max_images=20)
+    tf.summary.image('images', images, 20)
 
     return images, tf.reshape(label_index_batch, [batch_size]), fnames
 

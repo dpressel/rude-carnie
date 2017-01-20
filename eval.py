@@ -163,9 +163,9 @@ def evaluate(run_dir):
             print('Executing on %s' % FLAGS.device_id)
             images, labels, _ = inputs(FLAGS.train_dir, FLAGS.batch_size, FLAGS.image_size, train=not eval_data, num_preprocess_threads=FLAGS.num_preprocess_threads)
             logits = model_fn(md['nlabels'], images, 1, False)
-            summary_op = tf.merge_all_summaries()
+            summary_op = tf.summary.merge_all()
             
-            summary_writer = tf.train.SummaryWriter(run_dir, g)
+            summary_writer = tf.summary.FileWriter(run_dir, g)
             saver = tf.train.Saver()
             
             if FLAGS.requested_step_seq:

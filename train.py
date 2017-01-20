@@ -83,19 +83,19 @@ def optimizer(optim, eta, loss_fn):
 def loss(logits, labels):
     labels = tf.cast(labels, tf.int32)
     cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
-        logits, labels, name='cross_entropy_per_example')
+        logits=logits, labels=labels, name='cross_entropy_per_example')
     cross_entropy_mean = tf.reduce_mean(cross_entropy, name='cross_entropy')
     tf.add_to_collection('losses', cross_entropy_mean)
     losses = tf.get_collection('losses')
     regularization_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     total_loss = cross_entropy_mean + LAMBDA * sum(regularization_losses)
-    tf.scalar_summary('tl (raw)', total_loss)
+    tf.summary.scalar('tl (raw)', total_loss)
     #total_loss = tf.add_n(losses + regularization_losses, name='total_loss')
     loss_averages = tf.train.ExponentialMovingAverage(0.9, name='avg')
     loss_averages_op = loss_averages.apply(losses + [total_loss])
     for l in losses + [total_loss]:
-        tf.scalar_summary(l.op.name + ' (raw)', l)
-        tf.scalar_summary(l.op.name, loss_averages.average(l))
+        tf.summary.scalar(l.op.name + ' (raw)', l)
+        tf.summary.scalar(l.op.name, loss_averages.average(l))
     with tf.control_dependencies([loss_averages_op]):
         total_loss = tf.identity(total_loss)
     return total_loss
@@ -116,12 +116,12 @@ def main(argv=None):
 
         train_op = optimizer(FLAGS.optim, FLAGS.eta, total_loss)
         saver = tf.train.Saver(tf.all_variables())
-        summary_op = tf.merge_all_summaries()
-        init = tf.initialize_all_variables()
+        summary_op = tf.summary.merge_all()
+
         sess = tf.Session(config=tf.ConfigProto(
             log_device_placement=FLAGS.log_device_placement))
 
-        sess.run(init)
+        tf.global_variables_initializer().run(session=sess)
 
         # This is total hackland, it only works to fine-tune iv3
         if FLAGS.pre_model:
@@ -151,7 +151,7 @@ def main(argv=None):
         tf.train.start_queue_runners(sess=sess)
 
 
-        summary_writer = tf.train.SummaryWriter(run_dir, sess.graph)
+        summary_writer = tf.summary.FileWriter(run_dir, sess.graph)
         steps_per_train_epoch = int(md['train_counts'] / FLAGS.batch_size)
         num_steps = FLAGS.max_steps if FLAGS.epochs < 1 else FLAGS.epochs * steps_per_train_epoch
         print('Requested number of steps [%d]' % num_steps)
