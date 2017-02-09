@@ -54,6 +54,10 @@ You can use your own training data if you wish.  This is a little easier to do w
 
 #### Download Adience data and folds
 
+The Adience data page is here, where you can download the aligned dataset used in the example usage below:
+
+http://www.openu.ac.il/home/hassner/Adience/data.html
+
 Get the folds, we dont need to run their preprocessing scripts since we are doing this in the preproc.py script using tensorflow
 
 ```
