@@ -132,7 +132,7 @@ def main(argv=None):
 
         if FLAGS.pre_checkpoint_path:
             if tf.gfile.Exists(FLAGS.pre_checkpoint_path) is True:
-                print('Trying to restore checkpoint from %s' % FLAGS.pre_checkpoint_point)
+                print('Trying to restore checkpoint from %s' % FLAGS.pre_checkpoint_path)
                 restorer = tf.train.Saver()
                 tf.train.latest_checkpoint(FLAGS.pre_checkpoint_path)
                 print('%s: Pre-trained model restored from %s' %
