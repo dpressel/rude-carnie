@@ -107,7 +107,7 @@ def main(argv=None):  # pylint: disable=unused-argument
 
         images = tf.placeholder(tf.float32, [None, RESIZE_FINAL, RESIZE_FINAL, 3])
         logits = model_fn(nlabels, images, 1, False)
-        init = tf.initialize_all_variables()
+        init = tf.global_variables_initializer()
             
         requested_step = FLAGS.requested_step if FLAGS.requested_step else None
         

@@ -11,12 +11,13 @@ http://www.someecards.com/news/getting-old/howoldnet-takes-your-picture-and-uses
 
 ### Currently Supported Models
 
- - _Gil Levi and Tal Hassner, Age and Gender Classification Using Convolutional Neural Networks, IEEE Workshop on Analysis and Modeling of Faces and Gestures (AMFG), at the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), Boston, June 2015_
+  - _Gil Levi and Tal Hassner, Age and Gender Classification Using Convolutional Neural Networks, IEEE Workshop on Analysis and Modeling of Faces and Gestures (AMFG), at the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), Boston, June 2015_
 
 http://www.openu.ac.il/home/hassner/projects/cnn_agegender/
 https://github.com/GilLevi/AgeGenderDeepLearning
 
- - Inception v3 with fine-tuning
+  - Inception v3 with fine-tuning
+    - This will start with an inception v3 checkpoint, and fine-tune for either age or gender detection 
 
 ### Running
 
@@ -46,6 +47,12 @@ Additionally, if you have an image with one or more frontal faces, you can run a
 
 ```
 python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 8000 --filename /home/dpressel/Downloads/portraits/halloween15.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
+```
+
+If you want to use guess.py with an inception fine-tuned model, the usage is the same as above, but remember to pass _--model_type inception_:
+
+```
+python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/ --filename /home/dpressel/Downloads/portraits/prince.jpg 
 ```
 
 ### Training
@@ -95,7 +102,7 @@ Gender is done much the same way:
 python2.7 preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list gender_train.txt --valid_list gender_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0
 ```
 
-#### Train the model
+#### Train the model (Levi/Hassner)
 
 Now that we have generated the training and validation shards, we can start training the program.  Here is a simple way to call the driver program to run for 10,000 iterations with a batch size of 128, and using SGD with momentum to train:
 
@@ -111,6 +118,20 @@ Once again, gender is done much the same way.  Just be careful that you are runn
 python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 10000
 
 ```
+
+#### Fine-tuning the Inception (v3) model
+
+Its also easy to use this codebase to fine-tune an pre-trained inception checkpoint for age or gender dectection.  Here is an example for how to do this:
+
+```
+python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0 --max_steps 15000 --model_type inception --batch_size 32 --eta 0.001 --dropout 0.5 --pre_model /data/pre-trained/inception_v3.ckpt
+```
+
+You can get the inception_v3.ckpt like so:
+
+https://github.com/tensorflow/models/tree/master/im2txt#download-the-inception-v3-checkpoint
+
+#### Monitoring the training
 
 You can easily monitor the job run by launching tensorboard with the --logdir specified in the program's initial output:
 
@@ -137,4 +158,6 @@ Here is an after-the-fact run of eval that loops over the specified checkpoints 
 python2.7 eval.py  --run_id 25079 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --requested_step_seq 7000,8000,9000,9999
 ```
 
+To monitor the fine-tuning of an inception model, the call is much the same.  Just be sure to pass _--model_type inception_
 
+python2.7 eval.py  --run_id 8128 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --model_type inception

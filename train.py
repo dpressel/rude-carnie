@@ -115,7 +115,7 @@ def main(argv=None):
         total_loss = loss(logits, labels)
 
         train_op = optimizer(FLAGS.optim, FLAGS.eta, total_loss)
-        saver = tf.train.Saver(tf.all_variables())
+        saver = tf.train.Saver(tf.global_variables())
         summary_op = tf.summary.merge_all()
 
         sess = tf.Session(config=tf.ConfigProto(
