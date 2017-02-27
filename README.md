@@ -119,7 +119,7 @@ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fol
 
 ```
 
-#### Fine-tuning the Inception (v3) model
+#### Train the model (fine-tuned Inception)
 
 Its also easy to use this codebase to fine-tune an pre-trained inception checkpoint for age or gender dectection.  Here is an example for how to do this:
 
