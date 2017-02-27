@@ -160,4 +160,6 @@ python2.7 eval.py  --run_id 25079 --train_dir /home/dpressel/dev/work/AgeGenderD
 
 To monitor the fine-tuning of an inception model, the call is much the same.  Just be sure to pass _--model_type inception_
 
+```
 python2.7 eval.py  --run_id 8128 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --model_type inception
+```
