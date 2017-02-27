@@ -52,7 +52,7 @@ python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fol
 If you want to use guess.py with an inception fine-tuned model, the usage is the same as above, but remember to pass _--model_type inception_:
 
 ```
-python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/ --filename /home/dpressel/Downloads/portraits/prince.jpg 
+python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/prince.jpg
 ```
 
 ### Training
