@@ -55,6 +55,11 @@ If you want to use guess.py with an inception fine-tuned model, the usage is the
 python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/prince.jpg
 ```
 
+You can find a pre-trained age checkpoint for inception here:
+
+https://drive.google.com/drive/folders/0B8N1oYmGLVGWbDZ4Y21GLWxtV1E
+
+
 ### Training
 
 You can use your own training data if you wish.  This is a little easier to do with gender, since there are many ways that you could come up with a training set for this, but it has been developed specifically with the Adience corpus in mind, and uses the pre-splits created by Levi and Hassner.
