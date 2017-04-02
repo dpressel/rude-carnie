@@ -13,8 +13,8 @@ http://www.someecards.com/news/getting-old/howoldnet-takes-your-picture-and-uses
 
   - _Gil Levi and Tal Hassner, Age and Gender Classification Using Convolutional Neural Networks, IEEE Workshop on Analysis and Modeling of Faces and Gestures (AMFG), at the IEEE Conf. on Computer Vision and Pattern Recognition (CVPR), Boston, June 2015_
 
-http://www.openu.ac.il/home/hassner/projects/cnn_agegender/
-https://github.com/GilLevi/AgeGenderDeepLearning
+    - http://www.openu.ac.il/home/hassner/projects/cnn_agegender/
+    - https://github.com/GilLevi/AgeGenderDeepLearning
 
   - Inception v3 with fine-tuning
     - This will start with an inception v3 checkpoint, and fine-tune for either age or gender detection 
