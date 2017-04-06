@@ -106,7 +106,7 @@ git clone https://github.com/GilLevi/AgeGenderDeepLearning
 
 #### Pre-process data for training
 
-First you will need to preprocess the data using preproc.py.  This assumes that there is a directory that is passed for an absolute directory, as well as a file containing a list of the training data images and the label itself, and the validation data, and test data if applicable.  The procproc.py program generates 'shards' for each of the datasets, each containing JPEG encoded RGB images of size 256x256
+First you will need to preprocess the data using preproc.py.  This assumes that there is a directory that is passed for an absolute directory, as well as a file containing a list of the training data images and the label itself, and the validation data, and test data if applicable.  The preproc.py program generates 'shards' for each of the datasets, each containing JPEG encoded RGB images of size 256x256
 
 ```
 $ python2.7 preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list age_train.txt --valid_list age_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0
