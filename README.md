@@ -43,11 +43,26 @@ Here is a version using gender, where we restore the checkpoint from a specific 
 $ python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 9999 --filename /home/dpressel/Downloads/portraits/prince.jpg 
 ```
 
-Additionally, if you have an image with one or more frontal faces, you can run a face-detector upfront, and each detected face will be chipped out and run through classification individually:
+#### Face Detection
+
+If you have an image with one or more frontal faces, you can run a face-detector upfront, and each detected face will be chipped out and run through classification individually.  There are 3 model types currently supported: OpenCV's cascade model and YOLO.  Here is an example using the OpenCV model:
 
 ```
-$ python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 8000 --filename /home/dpressel/Downloads/portraits/halloween15.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
+python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
 ```
+Notice that the OpenCV model is the default.  Here is an example using the yolo_tiny model:
+
+```
+python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model weights/YOLO_tiny.ckpt --face_detection_type yolo_tiny
+```
+
+If you want to run YOLO, get the tiny checkpoint from here
+
+https://github.com/gliese581gg/YOLO_tensorflow/
+
+The YOLO detection code is based heavily on:
+
+https://github.com/gliese581gg/YOLO_tensorflow/blob/master/YOLO_tiny_tf.py
 
 #### Prediction with fine-tuned inception model
 
