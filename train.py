@@ -41,7 +41,7 @@ tf.app.flags.DEFINE_float('eta', 0.001,
 tf.app.flags.DEFINE_float('pdrop', 0.,
                           'Dropout probability')
 
-tf.app.flags.DEFINE_integer('max_steps', 50000,
+tf.app.flags.DEFINE_integer('max_steps', 40000,
                           'Number of iterations')
 
 tf.app.flags.DEFINE_integer('steps_per_decay', 10000,

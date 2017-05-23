@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from six.moves import xrange
 from datetime import datetime
 import os
 import random
@@ -65,7 +66,7 @@ def _convert_to_example(filename, image_buffer, label, height, width):
 
     example = tf.train.Example(features=tf.train.Features(feature={
         'image/class/label': _int64_feature(label),
-        'image/filename': _bytes_feature(os.path.basename(filename)),
+        'image/filename': _bytes_feature(str.encode(os.path.basename(filename))),
         'image/encoded': _bytes_feature(image_buffer),
         'image/height': _int64_feature(height),
         'image/width': _int64_feature(width)
@@ -122,7 +123,7 @@ def _process_image(filename, coder):
     width: integer, image width in pixels.
     """
     # Read the image file.
-    with tf.gfile.FastGFile(filename, 'r') as f:
+    with tf.gfile.FastGFile(filename, 'rb') as f:
         image_data = f.read()
 
     # Convert any PNG to JPEG's for consistency.
@@ -256,7 +257,7 @@ def _find_image_files(list_file, data_dir):
     # Shuffle the ordering of all image files in order to guarantee
     # random ordering of the images with respect to label in the
     # saved TFRecord files. Make the randomization repeatable.
-    shuffled_index = range(len(filenames))
+    shuffled_index = list(range(len(filenames)))
     random.seed(12345)
     random.shuffle(shuffled_index)
     
