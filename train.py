@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from six.moves import xrange
 from datetime import datetime
 import time
 import os
@@ -34,14 +35,19 @@ tf.app.flags.DEFINE_string('optim', 'Momentum',
 tf.app.flags.DEFINE_integer('image_size', 227,
                             'Image size')
 
-tf.app.flags.DEFINE_float('eta', 0.002,
+tf.app.flags.DEFINE_float('eta', 0.001,
                           'Learning rate')
 
 tf.app.flags.DEFINE_float('pdrop', 0.,
                           'Dropout probability')
 
-tf.app.flags.DEFINE_integer('max_steps', 15000,
+tf.app.flags.DEFINE_integer('max_steps', 50000,
                           'Number of iterations')
+
+tf.app.flags.DEFINE_integer('steps_per_decay', 10000,
+                            'Number of steps before learning rate decay')
+tf.app.flags.DEFINE_float('eta_decay_rate', 0.1,
+                          'Learning rate decay')
 
 tf.app.flags.DEFINE_integer('epochs', -1,
                             'Number of epochs')
@@ -61,14 +67,15 @@ tf.app.flags.DEFINE_string('pre_model',
 FLAGS = tf.app.flags.FLAGS
 
 # Every 5k steps cut learning rate in half
-def exponential_staircase_decay(at_step=5000, decay_rate=0.5):
+def exponential_staircase_decay(at_step=10000, decay_rate=0.1):
 
+    print('decay [%f] every [%d] steps' % (decay_rate, at_step))
     def _decay(lr, global_step):
         return tf.train.exponential_decay(lr, global_step,
                                           at_step, decay_rate, staircase=True)
     return _decay
 
-def optimizer(optim, eta, loss_fn):
+def optimizer(optim, eta, loss_fn, at_step, decay_rate):
     global_step = tf.Variable(0, trainable=False)
     optz = optim
     if optim == 'Adadelta':
@@ -76,7 +83,7 @@ def optimizer(optim, eta, loss_fn):
         lr_decay_fn = None
     elif optim == 'Momentum':
         optz = lambda lr: tf.train.MomentumOptimizer(lr, MOM)
-        lr_decay_fn = exponential_staircase_decay()
+        lr_decay_fn = exponential_staircase_decay(at_step, decay_rate)
 
     return tf.contrib.layers.optimize_loss(loss_fn, global_step, eta, optz, clip_gradients=4., learning_rate_decay_fn=lr_decay_fn)
 
@@ -114,7 +121,7 @@ def main(argv=None):
         logits = model_fn(md['nlabels'], images, 1-FLAGS.pdrop, True)
         total_loss = loss(logits, labels)
 
-        train_op = optimizer(FLAGS.optim, FLAGS.eta, total_loss)
+        train_op = optimizer(FLAGS.optim, FLAGS.eta, total_loss, FLAGS.steps_per_decay, FLAGS.eta_decay_rate)
         saver = tf.train.Saver(tf.global_variables())
         summary_op = tf.summary.merge_all()
 
