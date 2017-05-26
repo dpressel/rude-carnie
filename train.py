@@ -35,7 +35,7 @@ tf.app.flags.DEFINE_string('optim', 'Momentum',
 tf.app.flags.DEFINE_integer('image_size', 227,
                             'Image size')
 
-tf.app.flags.DEFINE_float('eta', 0.001,
+tf.app.flags.DEFINE_float('eta', 0.01,
                           'Learning rate')
 
 tf.app.flags.DEFINE_float('pdrop', 0.,
