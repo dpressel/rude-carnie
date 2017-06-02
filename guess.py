@@ -108,8 +108,8 @@ def main(argv=None):  # pylint: disable=unused-argument
         print(face_files)
         files += face_files
 
-
-    with tf.Session() as sess:
+    config = tf.ConfigProto(allow_soft_placement=True)
+    with tf.Session(config=config) as sess:
 
         #tf.reset_default_graph()
         label_list = AGE_LIST if FLAGS.class_type == 'age' else GENDER_LIST

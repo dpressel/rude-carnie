@@ -19,7 +19,8 @@ class ImageCoder(object):
     
     def __init__(self):
         # Create a single Session to run all image coding calls.
-        self._sess = tf.Session()
+        config = tf.ConfigProto(allow_soft_placement=True)
+        self._sess = tf.Session(config=config)
         
         # Initializes function that converts PNG to JPEG data.
         self._png_data = tf.placeholder(dtype=tf.string)
