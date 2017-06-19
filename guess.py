@@ -123,7 +123,8 @@ def classify_one_multi_crop(sess, label_list, softmax_output, coder, images, ima
 
 def list_images(srcfile):
     with open(srcfile, 'r') as csvfile:
-        reader = csv.reader(csvfile)
+        delim = ',' if srcfile.endswith('.csv') else '\t'
+        reader = csv.reader(csvfile, delimiter=delim)
         if srcfile.endswith('.csv') or srcfile.endswith('.tsv'):
             print('skipping header')
             _ = next(reader)
