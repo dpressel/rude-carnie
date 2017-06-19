@@ -40,7 +40,7 @@ $ python guess.py --model_dir  /home/dpressel/dev/work/AgeGenderDeepLearning/Fol
 Here is a version using gender, where we restore the checkpoint from a specific step:
 
 ```
-$ python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 9999 --filename /home/dpressel/Downloads/portraits/prince.jpg 
+$ python guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 9999 --filename /home/dpressel/Downloads/portraits/prince.jpg 
 ```
 
 #### Face Detection
@@ -65,7 +65,7 @@ python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/check
 YOLO tiny:
 
 ```
-python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model weights/YOLO_tiny.ckpt --face_detection_type yolo_tiny
+python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model weights/YOLO_tiny.ckpt --face_detection_type yolo_tiny
 ```
 
 If you want to run YOLO, get the tiny checkpoint from here
@@ -81,14 +81,14 @@ https://github.com/gliese581gg/YOLO_tensorflow/blob/master/YOLO_tiny_tf.py
 If you want to use guess.py with an inception fine-tuned model, the usage is the same as above, but remember to pass _--model_type inception_:
 
 ```
-$ python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/prince.jpg
+$ python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/prince.jpg
 
 ```
 
 Here is a gender guess:
 
 ```
-$ python2.7 guess.py --class_type gender --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/gender/inception/21936/ --filename /home/dpressel/Downloads/portraits/Dan-Pressel-3.png 
+$ python guess.py --class_type gender --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/gender/inception/21936/ --filename /home/dpressel/Downloads/portraits/Dan-Pressel-3.png 
 I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.7.5 locally
 I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
 I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.7.5 locally
@@ -136,7 +136,7 @@ git clone https://github.com/GilLevi/AgeGenderDeepLearning
 First you will need to preprocess the data using preproc.py.  This assumes that there is a directory that is passed for an absolute directory, as well as a file containing a list of the training data images and the label itself, and the validation data, and test data if applicable.  The preproc.py program generates 'shards' for each of the datasets, each containing JPEG encoded RGB images of size 256x256
 
 ```
-$ python2.7 preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list age_train.txt --valid_list age_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0
+$ python preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list age_train.txt --valid_list age_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0
 
 ```
 
@@ -159,7 +159,7 @@ dpressel@dpressel:~/dev/work/3csi-rd/dpressel/sh$ head /home/dpressel/dev/work/A
 Gender is done much the same way:
 
 ```
-$ python2.7 preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list gender_train.txt --valid_list gender_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0
+$ python preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/train_val_txt_files_per_fold/test_fold_is_0 --train_list gender_train.txt --valid_list gender_val.txt --data_dir /data/xdata/age-gender/aligned --output_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0
 ```
 
 #### Train the model (Levi/Hassner)
@@ -167,7 +167,7 @@ $ python2.7 preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/
 Now that we have generated the training and validation shards, we can start training the program.  Here is a simple way to call the driver program to run for 10,000 iterations with a batch size of 128, and using SGD with momentum to train:
 
 ```
-$ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0 --max_steps 12000
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0 --max_steps 12000
 
 ```
 
@@ -175,7 +175,7 @@ Once again, gender is done much the same way.  Just be careful that you are runn
 
 ```
 
-$ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 10000
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 10000
 
 ```
 
@@ -184,7 +184,7 @@ $ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/F
 Its also easy to use this codebase to fine-tune an pre-trained inception checkpoint for age or gender dectection.  Here is an example for how to do this:
 
 ```
-$ python2.7 train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0 --max_steps 15000 --model_type inception --batch_size 32 --eta 0.001 --dropout 0.5 --pre_model /data/pre-trained/inception_v3.ckpt
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0 --max_steps 15000 --model_type inception --batch_size 32 --eta 0.001 --dropout 0.5 --pre_model /data/pre-trained/inception_v3.ckpt
 ```
 
 You can get the inception_v3.ckpt like so:
@@ -208,18 +208,18 @@ The evaluation program is written to be run alongside the training or after the 
 Here is an example of running evaluation continuously.  The --run_id will live in the --train_dir (run-<id>) and is the product of a single run of training (the id is actually the PID used in training):
 
 ```
-$ python2.7 eval.py  --run_id 15918 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_gen_test_fold_is_0
+$ python eval.py  --run_id 15918 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_gen_test_fold_is_0
 
 ```
 
 Here is an after-the-fact run of eval that loops over the specified checkpoints and evaluates the performance on each:
 
 ```
-$ python2.7 eval.py  --run_id 25079 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --requested_step_seq 7000,8000,9000,9999
+$ python eval.py  --run_id 25079 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --requested_step_seq 7000,8000,9000,9999
 ```
 
 To monitor the fine-tuning of an inception model, the call is much the same.  Just be sure to pass _--model_type inception_
 
 ```
-$ python2.7 eval.py  --run_id 8128 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --model_type inception
+$ python eval.py  --run_id 8128 --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0/ --eval_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/eval_age_test_fold_is_0 --model_type inception
 ```
