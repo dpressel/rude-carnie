@@ -4,7 +4,7 @@ import os
 import cv2
 import time
 import sys
-from detect import face_detection_model
+from util import *
 import csv
 
 # YOLO tiny

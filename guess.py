@@ -10,7 +10,6 @@ import numpy as np
 import tensorflow as tf
 from model import select_model, get_checkpoint
 from utils import *
-from detect import face_detection_model
 import os
 import json
 import csv

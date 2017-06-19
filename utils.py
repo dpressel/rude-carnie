@@ -10,6 +10,7 @@ import time
 from data import inputs, standardize_image
 import numpy as np
 import tensorflow as tf
+from detect import *
 import re
 
 RESIZE_AOI = 256
@@ -160,3 +161,18 @@ def make_multi_crop_batch(filename, coder):
 
     image_batch = tf.stack(crops)
     return image_batch
+
+
+
+def face_detection_model(model_type, model_path):
+    model_type_lc = model_type.lower()
+    if model_type_lc == 'yolo_tiny':
+        from yolodetect import PersonDetectorYOLOTiny
+        return PersonDetectorYOLOTiny(model_path)
+    elif model_type_lc == 'yolo_face':
+        from yolodetect import FaceDetectorYOLO
+        return FaceDetectorYOLO(model_path)
+    elif model_type == 'dlib':
+        from dlibdetect import FaceDetectorDlib
+        return FaceDetectorDlib(model_path)
+    return ObjectDetectorCascadeOpenCV(model_path)
