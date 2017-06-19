@@ -2,7 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-
+import six.moves
 from datetime import datetime
 import sys
 import math
@@ -10,9 +10,48 @@ import time
 from data import inputs, standardize_image
 import numpy as np
 import tensorflow as tf
+import re
 
 RESIZE_AOI = 256
 RESIZE_FINAL = 227
+
+# Modifed from here
+# http://stackoverflow.com/questions/3160699/python-progress-bar#3160819
+class ProgressBar(object):
+    DEFAULT = 'Progress: %(bar)s %(percent)3d%%'
+    FULL = '%(bar)s %(current)d/%(total)d (%(percent)3d%%) %(remaining)d to go'
+
+    def __init__(self, total, width=40, fmt=DEFAULT, symbol='='):
+        assert len(symbol) == 1
+
+        self.total = total
+        self.width = width
+        self.symbol = symbol
+        self.fmt = re.sub(r'(?P<name>%\(.+?\))d',
+            r'\g<name>%dd' % len(str(total)), fmt)
+
+        self.current = 0
+
+    def update(self, step=1):
+        self.current += step
+        percent = self.current / float(self.total)
+        size = int(self.width * percent)
+        remaining = self.total - self.current
+        bar = '[' + self.symbol * size + ' ' * (self.width - size) + ']'
+
+        args = {
+            'total': self.total,
+            'bar': bar,
+            'current': self.current,
+            'percent': percent * 100,
+            'remaining': remaining
+        }
+        six.print_('\r' + self.fmt % args, end='')
+
+    def done(self):
+        self.current = self.total
+        self.update(step=0)
+        print('')
 
 # Read image files            
 class ImageCoder(object):
@@ -54,15 +93,40 @@ def _is_png(filename):
     """
     return '.png' in filename
         
-def make_batch(filename, coder, multicrop):
+def make_multi_image_batch(filenames, coder):
+    """Process a multi-image batch, each with a single-look
+    Args:
+    filenames: list of paths
+    coder: instance of ImageCoder to provide TensorFlow image coding utils.
+    Returns:
+    image_buffer: string, JPEG encoding of RGB image.
+    """
+
+    images = []
+
+    for filename in filenames:
+        with tf.gfile.FastGFile(filename, 'rb') as f:
+            image_data = f.read()
+        # Convert any PNG to JPEG's for consistency.
+        if _is_png(filename):
+            print('Converting PNG to JPEG for %s' % filename)
+            image_data = coder.png_to_jpeg(image_data)
+    
+        image = coder.decode_jpeg(image_data)
+
+        crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
+        image = standardize_image(crop)
+        images.append(image)
+    image_batch = tf.stack(images)
+    return image_batch
+
+def make_multi_crop_batch(filename, coder):
     """Process a single image file.
     Args:
     filename: string, path to an image file e.g., '/path/to/example.JPG'.
     coder: instance of ImageCoder to provide TensorFlow image coding utils.
     Returns:
     image_buffer: string, JPEG encoding of RGB image.
-    height: integer, image height in pixels.
-    width: integer, image width in pixels.
     """
     # Read the image file.
     with tf.gfile.FastGFile(filename, 'rb') as f:
@@ -76,31 +140,23 @@ def make_batch(filename, coder, multicrop):
     image = coder.decode_jpeg(image_data)
 
     crops = []
+    print('Running multi-cropped image')
+    h = image.shape[0]
+    w = image.shape[1]
+    hl = h - RESIZE_FINAL
+    wl = w - RESIZE_FINAL
 
-    if multicrop is False:
-        print('Running a single image')
-        crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-        image = standardize_image(crop)
+    crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
+    crops.append(standardize_image(crop))
+    crops.append(tf.image.flip_left_right(crop))
 
-        crops.append(image)
-    else:
-        print('Running multi-cropped image')
-        h = image.shape[0]
-        w = image.shape[1]
-        hl = h - RESIZE_FINAL
-        wl = w - RESIZE_FINAL
-
-        crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-        crops.append(standardize_image(crop))
-        crops.append(tf.image.flip_left_right(crop))
-
-        corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
-        for corner in corners:
-            ch, cw = corner
-            cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
-            crops.append(standardize_image(cropped))
-            flipped = tf.image.flip_left_right(cropped)
-            crops.append(standardize_image(flipped))
+    corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
+    for corner in corners:
+        ch, cw = corner
+        cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
+        crops.append(standardize_image(cropped))
+        flipped = tf.image.flip_left_right(cropped)
+        crops.append(standardize_image(flipped))
 
     image_batch = tf.stack(crops)
     return image_batch

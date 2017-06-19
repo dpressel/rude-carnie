@@ -28,13 +28,13 @@ There are several ways to use a pre-existing checkpoint to do age or gender clas
 Here is a run using Age classification on the latest checkpoint in a directory using 12-look (all corners + center + resized, along with flipped versions) averaging:
 
 ```
-$ python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_1/run-20854 --filename /home/dpressel/Downloads/portraits/prince.jpg
+$ python guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_1/run-20854 --filename /home/dpressel/Downloads/portraits/prince.jpg
 ```
 
 You can also tell it to do a single image classification without the corners and center crop.  Here is a run using Age classification on the latest checkpoint in a directory, using a single look at the image
 
 ```
-$ python2.7 guess.py --model_dir  /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_1/run-20854 --filename /home/dpressel/Downloads/portraits/prince.jpg --single_look
+$ python guess.py --model_dir  /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_1/run-20854 --filename /home/dpressel/Downloads/portraits/prince.jpg --single_look
 ```
 
 Here is a version using gender, where we restore the checkpoint from a specific step:

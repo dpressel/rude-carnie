@@ -9,7 +9,7 @@ from data import inputs
 import numpy as np
 import tensorflow as tf
 from model import select_model, get_checkpoint
-from utils import ImageCoder, make_batch
+from utils import *
 from detect import face_detection_model
 import os
 import json
@@ -18,6 +18,7 @@ import csv
 RESIZE_FINAL = 227
 GENDER_LIST =['M','F']
 AGE_LIST = ['(0, 2)','(4, 6)','(8, 12)','(15, 20)','(25, 32)','(38, 43)','(48, 53)','(60, 100)']
+MAX_BATCH_SZ = 128
 
 tf.app.flags.DEFINE_string('model_dir', '',
                            'Model directory (where training data lives)')
@@ -52,10 +53,7 @@ tf.app.flags.DEFINE_string('face_detection_type', 'cascade', 'Face detection mod
 FLAGS = tf.app.flags.FLAGS
 
 def one_of(fname, types):
-    for ty in types:
-        if fname.endswith('.' + ty):
-            return True
-    return False
+    return any([fname.endswith('.' + ty) for ty in types])
 
 def resolve_file(fname):
     if os.path.exists(fname): return fname
@@ -65,30 +63,65 @@ def resolve_file(fname):
             return cand
     return None
 
-def classify(sess, label_list, softmax_output, coder, images, image_file):
 
-    print('Running file %s' % image_file)
-    image_batch = make_batch(image_file, coder, not FLAGS.single_look)
-    batch_results = sess.run(softmax_output, feed_dict={images:image_batch.eval()})
-    output = batch_results[0]
-    batch_sz = batch_results.shape[0]
-    for i in range(1, batch_sz):
-        output = output + batch_results[i]
-        
-    output /= batch_sz
-    best = np.argmax(output)
-    best_choice = (label_list[best], output[best])
-    print('Guess @ 1 %s, prob = %.2f' % best_choice)
+def classify_many_single_crop(sess, label_list, softmax_output, coder, images, image_files, writer):
+    try:
+        num_batches = math.ceil(len(image_files) / MAX_BATCH_SZ)
+        pg = ProgressBar(num_batches)
+        for j in range(num_batches):
+            start_offset = j * num_batches
+            end_offset = min((j + 1) * MAX_BATCH_SZ, len(image_files))
+            
+            batch_image_files = image_files[start_offset:end_offset]
+            print(start_offset, end_offset, len(batch_image_files))
+            image_batch = make_multi_image_batch(batch_image_files, coder)
+            batch_results = sess.run(softmax_output, feed_dict={images:image_batch.eval()})
+            batch_sz = batch_results.shape[0]
+            for i in range(batch_sz):
+                output_i = batch_results[i]
+                best_i = np.argmax(output_i)
+                best_choice = (label_list[best_i], output_i[best_i])
+                print('Guess @ 1 %s, prob = %.2f' % best_choice)
+                if writer is not None:
+                    f = batch_image_files[i]
+                    writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
+            pg.update()
+        pg.done()
+    except Exception as e:
+        print(e)
+        print('Failed to run all images')
+
+def classify_one_multi_crop(sess, label_list, softmax_output, coder, images, image_file, writer):
+    try:
+
+        print('Running file %s' % image_file)
+        image_batch = make_multi_crop_batch(image_file, coder)
+
+        batch_results = sess.run(softmax_output, feed_dict={images:image_batch.eval()})
+        output = batch_results[0]
+        batch_sz = batch_results.shape[0]
     
-    nlabels = len(label_list)
-    if nlabels > 2:
-        output[best] = 0
-        second_best = np.argmax(output)
+        for i in range(1, batch_sz):
+            output = output + batch_results[i]
+        
+        output /= batch_sz
+        best = np.argmax(output)
+        best_choice = (label_list[best], output[best])
+        print('Guess @ 1 %s, prob = %.2f' % best_choice)
+    
+        nlabels = len(label_list)
+        if nlabels > 2:
+            output[best] = 0
+            second_best = np.argmax(output)
+            print('Guess @ 2 %s, prob = %.2f' % (label_list[second_best], output[second_best]))
 
-        print('Guess @ 2 %s, prob = %.2f' % (label_list[second_best], output[second_best]))
-    return best_choice
-         
-def batchlist(srcfile):
+        if writer is not None:
+            writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
+    except Exception as e:
+        print(e)
+        print('Failed to run image %s ' % image_file)
+
+def list_images(srcfile):
     with open(srcfile, 'r') as csvfile:
         reader = csv.reader(csvfile)
         if srcfile.endswith('.csv') or srcfile.endswith('.tsv'):
@@ -111,7 +144,6 @@ def main(argv=None):  # pylint: disable=unused-argument
     config = tf.ConfigProto(allow_soft_placement=True)
     with tf.Session(config=config) as sess:
 
-        #tf.reset_default_graph()
         label_list = AGE_LIST if FLAGS.class_type == 'age' else GENDER_LIST
         nlabels = len(label_list)
 
@@ -139,11 +171,19 @@ def main(argv=None):  # pylint: disable=unused-argument
 
             # Support a batch mode if no face detection model
             if len(files) == 0:
-                files.append(FLAGS.filename)
-                # If it happens to be a list file, read the list and clobber the files
-                if one_of(FLAGS.filename, ('csv', 'tsv', 'txt')):
-                    files = batchlist(FLAGS.filename)
-
+                if (os.path.isdir(FLAGS.filename)):
+                    for relpath in os.listdir(FLAGS.filename):
+                        abspath = os.path.join(FLAGS.filename, relpath)
+                        
+                        if os.path.isfile(abspath) and any([abspath.endswith('.' + ty) for ty in ('jpg', 'png', 'JPG', 'PNG', 'jpeg')]):
+                            print(abspath)
+                            files.append(abspath)
+                else:
+                    files.append(FLAGS.filename)
+                    # If it happens to be a list file, read the list and clobber the files
+                    if any([FLAGS.filename.endswith('.' + ty) for ty in ('csv', 'tsv', 'txt')]):
+                        files = list_images(FLAGS.filename)
+                
             writer = None
             output = None
             if FLAGS.target:
@@ -151,20 +191,14 @@ def main(argv=None):  # pylint: disable=unused-argument
                 output = open(FLAGS.target, 'w')
                 writer = csv.writer(output)
                 writer.writerow(('file', 'label', 'score'))
+            image_files = list(filter(lambda x: x is not None, [resolve_file(f) for f in files]))
+            print(image_files)
+            if FLAGS.single_look:
+                classify_many_single_crop(sess, label_list, softmax_output, coder, images, image_files, writer)
 
-
-            for f in files:
-                image_file = resolve_file(f)
-            
-                if image_file is None: continue
-
-                try:
-                    best_choice = classify(sess, label_list, softmax_output, coder, images, image_file)
-                    if writer is not None:
-                        writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
-                except Exception as e:
-                    print(e)
-                    print('Failed to run image %s ' % image_file)
+            else:
+                for image_file in image_files:
+                    classify_one_multi_crop(sess, label_list, softmax_output, coder, images, image_file, writer)
 
             if output is not None:
                 output.close()
