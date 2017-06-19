@@ -69,7 +69,7 @@ def classify_many_single_crop(sess, label_list, softmax_output, coder, images, i
         num_batches = math.ceil(len(image_files) / MAX_BATCH_SZ)
         pg = ProgressBar(num_batches)
         for j in range(num_batches):
-            start_offset = j * num_batches
+            start_offset = j * MAX_BATCH_SZ
             end_offset = min((j + 1) * MAX_BATCH_SZ, len(image_files))
             
             batch_image_files = image_files[start_offset:end_offset]
