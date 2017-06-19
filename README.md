@@ -45,12 +45,24 @@ $ python2.7 guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/F
 
 #### Face Detection
 
-If you have an image with one or more frontal faces, you can run a face-detector upfront, and each detected face will be chipped out and run through classification individually.  There are 3 model types currently supported: OpenCV's cascade model and YOLO.  Here is an example using the OpenCV model:
+If you have an image with one or more frontal faces, you can run a face-detector upfront, and each detected face will be chipped out and run through classification individually.  A variety of face detectors are supported including OpenCV, dlib and YOLO
+
+OpenCV:
 
 ```
-python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
+python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
 ```
-Notice that the OpenCV model is the default.  Here is an example using the yolo_tiny model:
+
+To use dlib, you will need to install it and grab down the model:
+
+```
+wget http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+bunzip2 bunzip2 shape_predictor_68_face_landmarks.dat.bz2
+pip install dlib
+python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename ~/Downloads/portraits/halloween15.jpg --face_detection_type dlib --face_detection_model shape_predictor_68_face_landmarks.dat
+```
+
+YOLO tiny:
 
 ```
 python2.7 guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model weights/YOLO_tiny.ckpt --face_detection_type yolo_tiny
