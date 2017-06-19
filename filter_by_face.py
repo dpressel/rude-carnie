@@ -4,7 +4,7 @@ import os
 import cv2
 import time
 import sys
-from util import *
+from utils import *
 import csv
 
 # YOLO tiny
