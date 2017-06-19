@@ -126,7 +126,7 @@ def list_images(srcfile):
         reader = csv.reader(csvfile)
         if srcfile.endswith('.csv') or srcfile.endswith('.tsv'):
             print('skipping header')
-            reader.next()
+            _ = next(reader)
         
         return [row[0] for row in reader]
 
