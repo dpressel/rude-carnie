@@ -171,11 +171,11 @@ $ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fold
 
 ```
 
-Once again, gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.  Here we use a lower initial learning rate of `1e-3`
+Once again, gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.  Here we use a lower initial learning rate of `0.001`
 
 ```
 
-$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 30000 --eta 1e-3
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 30000 --eta 0.001
 
 ```
 
