@@ -175,7 +175,7 @@ Once again, gender is done much the same way.  Just be careful that you are runn
 
 ```
 
-$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --eta 0.001
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 30000 --eta 1e-3
 
 ```
 
