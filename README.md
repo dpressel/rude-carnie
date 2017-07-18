@@ -164,18 +164,18 @@ $ python preproc.py --fold_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fol
 
 #### Train the model (Levi/Hassner)
 
-Now that we have generated the training and validation shards, we can start training the program.  Here is a simple way to call the driver program to run for 10,000 iterations with a batch size of 128, and using SGD with momentum to train:
+Now that we have generated the training and validation shards, we can start training the program.  Here is a simple way to call the driver program to run using SGD with momentum to train:
 
 ```
-$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0 --max_steps 12000
-
-```
-
-Once again, gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.  Here let's train gender for 10k steps
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_0
 
 ```
 
-$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0 --max_steps 10000
+Once again, gender is done much the same way.  Just be careful that you are running on the the preprocessed gender data, not the age data.
+
+```
+
+$ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0
 
 ```
 
