@@ -83,7 +83,7 @@ def classify_many_single_crop(sess, label_list, softmax_output, coder, images, i
                 print('Guess @ 1 %s, prob = %.2f' % best_choice)
                 if writer is not None:
                     f = batch_image_files[i]
-                    writer.writerow((image_file, best_choice[0], '%.2f' % best_choice[1]))
+                    writer.writerow((f, best_choice[0], '%.2f' % best_choice[1]))
             pg.update()
         pg.done()
     except Exception as e:
