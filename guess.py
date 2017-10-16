@@ -5,7 +5,6 @@ from __future__ import print_function
 from datetime import datetime
 import math
 import time
-import time
 from data import inputs
 import numpy as np
 import tensorflow as tf
@@ -20,17 +19,17 @@ GENDER_LIST =['M','F']
 AGE_LIST = ['(0, 2)','(4, 6)','(8, 12)','(15, 20)','(25, 32)','(38, 43)','(48, 53)','(60, 100)']
 MAX_BATCH_SZ = 128
 
-tf.app.flags.DEFINE_string('model_dir', '/home/sprva/Desktop/age_gender/21936',
+tf.app.flags.DEFINE_string('model_dir', '',
                            'Model directory (where training data lives)')
 
-tf.app.flags.DEFINE_string('class_type', 'gender',
+tf.app.flags.DEFINE_string('class_type', 'age',
                            'Classification type (age|gender)')
 
 
 tf.app.flags.DEFINE_string('device_id', '/cpu:0',
                            'What processing unit to execute inference on')
 
-tf.app.flags.DEFINE_string('filename', '/home/sprva/Desktop/Abhijith/GIT/images',
+tf.app.flags.DEFINE_string('filename', '',
                            'File (Image) or File list (Text/No header TSV) to process')
 
 tf.app.flags.DEFINE_string('target', '',
@@ -65,8 +64,7 @@ def resolve_file(fname):
 
 def classify_many_single_crop(sess, label_list, softmax_output, coder, images, image_files, writer):
     try:
-        num_batches = math.ceil(len(image_files) / MAX_BATCH_SZ)
-	
+        num_batches = math.ceil(len(image_files) / MAX_BATCH_SZ)	
         pg = ProgressBar(int(num_batches))
         for j in range(int(num_batches)):
 	    start_offset = j * MAX_BATCH_SZ
