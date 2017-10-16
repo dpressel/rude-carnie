@@ -10,7 +10,7 @@ from data import inputs
 import numpy as np
 import tensorflow as tf
 from model import select_model, get_checkpoint
-from utils_a import *
+from utils import *
 import os
 import json
 import csv
