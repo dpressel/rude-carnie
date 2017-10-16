@@ -10,10 +10,8 @@ import time
 from data import inputs, standardize_image
 import numpy as np
 import tensorflow as tf
-#from detect import *
+from detect import *
 import re
-import base64
-import cv2
 
 RESIZE_AOI = 256
 RESIZE_FINAL = 227
