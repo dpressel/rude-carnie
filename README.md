@@ -23,38 +23,87 @@ http://www.someecards.com/news/getting-old/howoldnet-takes-your-picture-and-uses
 
 There are several ways to use a pre-existing checkpoint to do age or gender classification.  By default, the code will simply assume that the image you provided has a face in it, and will run that image through a multi-pass classification using the corners and center.
 
-  The --class_type parameter controls which task, and the --model_dir controls which checkpoint to restore.  There are advanced parameters for the checkpoint basename (--checkpoint).
+  The --class_type parameter controls which task, and the --model_dir controls which checkpoint to restore.  There are advanced parameters for the checkpoint basename (--checkpoint) and the requested step number if there are multiple checkpoints in the directory (--requested_step)
 
-Here is a run using the latest checkpoint in a directory using 12-look (all corners + center + resized, along with flipped versions) averaging:
-
-```
-$ python guess.py --model_dir_age /home/rude-carnie/age-detection-lh-checkpoint --model_dir_gender /home/rude-carnie/gender-detection-lh-checkpoint --filename /home/rude-carnie/TestImages/image_1.jpg
-```
-
-You can also tell it to do a single image classification without the corners and center crop.  Here is a run using latest checkpoint in a directory, using a single look at the image
+Here is a run using Age classification on the latest checkpoint in a directory using 12-look (all corners + center + resized, along with flipped versions) averaging:
 
 ```
-$ python guess.py --model_dir_age /home/rude-carnie/age-detection-lh-checkpoint --model_dir_gender /home/rude-carnie/gender-detection-lh-checkpoint --filename /home/rude-carnie/TestImages/image_1.jpg --single_look
+$ python guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_1/run-20854 --filename /home/dpressel/Downloads/portraits/prince.jpg
 ```
+
+You can also tell it to do a single image classification without the corners and center crop.  Here is a run using Age classification on the latest checkpoint in a directory, using a single look at the image
+
+```
+$ python guess.py --model_dir  /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/age_test_fold_is_1/run-20854 --filename /home/dpressel/Downloads/portraits/prince.jpg --single_look
+```
+
+Here is a version using gender, where we restore the checkpoint from a specific step:
+
+```
+$ python guess.py --model_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Folds/tf/gen_test_fold_is_0/run-31376 --class_type gender --requested_step 9999 --filename /home/dpressel/Downloads/portraits/prince.jpg 
+```
+
+#### Face Detection
+
+If you have an image with one or more frontal faces, you can run a face-detector upfront, and each detected face will be chipped out and run through classification individually.  A variety of face detectors are supported including OpenCV, dlib and YOLO
+
+OpenCV:
+
+```
+python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model /usr/share/opencv/haarcascades/haarcascade_frontalface_default.xml
+```
+
+To use dlib, you will need to install it and grab down the model:
+
+```
+wget http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
+bunzip2 bunzip2 shape_predictor_68_face_landmarks.dat.bz2
+pip install dlib
+python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename ~/Downloads/portraits/halloween15.jpg --face_detection_type dlib --face_detection_model shape_predictor_68_face_landmarks.dat
+```
+
+YOLO tiny:
+
+```
+python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/p_and_d.jpg --face_detection_model weights/YOLO_tiny.ckpt --face_detection_type yolo_tiny
+```
+
+If you want to run YOLO, get the tiny checkpoint from here
+
+https://github.com/gliese581gg/YOLO_tensorflow/
+
+The YOLO detection code is based heavily on:
+
+https://github.com/gliese581gg/YOLO_tensorflow/blob/master/YOLO_tiny_tf.py
 
 #### Prediction with fine-tuned inception model
 
 If you want to use guess.py with an inception fine-tuned model, the usage is the same as above, but remember to pass _--model_type inception_:
 
 ```
-$ python guess.py --model_type inception --model_dir_age /home/rude-carnie/22801 --model_dir_gender /home/rude-carnie/21936 --filename /home/rude-carnie/TestImages/image_1.jpg
+$ python guess.py --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/age/inception/22801 --filename /home/dpressel/Downloads/portraits/prince.jpg
 
 ```
 
-Here is an output of guess.py:
+Here is a gender guess:
 
 ```
-/home/rude-carnie/22801/checkpoint-14999
+$ python guess.py --class_type gender --model_type inception --model_dir /data/xdata/rude-carnie/checkpoints/gender/inception/21936/ --filename /home/dpressel/Downloads/portraits/Dan-Pressel-3.png 
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcublas.so.7.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcudnn.so.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcufft.so.7.5 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcuda.so.1 locally
+I tensorflow/stream_executor/dso_loader.cc:135] successfully opened CUDA library libcurand.so.7.5 locally
+...
+Executing on /cpu:0
 selected (fine-tuning) inception model
-/home/rude-carnie/21936/checkpoint-14999
-selected (fine-tuning) inception model
-Age_final:  Adult
-Gender_final:  Male
+/data/xdata/rude-carnie/checkpoints/gender/inception/21936/checkpoint-14999
+I tensorflow/core/common_runtime/gpu/gpu_device.cc:975] Creating TensorFlow device (/gpu:0) -> (device: 0, name: GeForce GTX 980M, pci bus id: 0000:01:00.0)
+Running file /home/dpressel/Downloads/portraits/Dan-Pressel-3.png
+Converting PNG to JPEG for /home/dpressel/Downloads/portraits/Dan-Pressel-3.png
+Running multi-cropped image
+Guess @ 1 M, prob = 0.99
+
 ```
 
 ### Pre-trained Checkpoints
