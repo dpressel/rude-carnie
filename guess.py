@@ -35,6 +35,14 @@ tf.app.flags.DEFINE_boolean('single_look', False, 'single look at the image or m
 
 FLAGS = tf.app.flags.FLAGS
 
+def resolve_file(fname):
+    if os.path.exists(fname): return fname
+    for suffix in ('.jpg', '.png', '.JPG', '.PNG', '.jpeg'):
+        cand = fname + suffix
+        if os.path.exists(cand):
+            return cand
+    return None
+
 def classify_one_multi_crop(sess, label_list, softmax_output, coder, images, image_file):
     try:
                 
@@ -113,10 +121,11 @@ def main():
     config = tf.ConfigProto(allow_soft_placement = True)
     config.gpu_options.allow_growth = True
 
+    #initializes checkpoints and creates graph for age model
     with tf.Graph().as_default() as age_graph:
         sess = tf.Session(graph = age_graph, config=config)       
         age_softmax, age_image = model_init(sess, FLAGS.model_dir_age, AGE_LIST)
-        
+    #initializes checkpoints and creates graph for gender model    
     with tf.Graph().as_default() as gen_graph:
         sess1 = tf.Session(graph = gen_graph, config=config)
         gender_softmax, gender_image = model_init(sess1, FLAGS.model_dir_gender, GENDER_LIST)
