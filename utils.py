@@ -3,12 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import six.moves
-from datetime import datetime
-import sys
-import math
-import time
-from data import inputs, standardize_image
-import numpy as np
+from data import standardize_image
 import tensorflow as tf
 from detect import *
 import re
@@ -18,6 +13,8 @@ RESIZE_FINAL = 227
 
 # Modifed from here
 # http://stackoverflow.com/questions/3160699/python-progress-bar#3160819
+
+
 class ProgressBar(object):
     DEFAULT = 'Progress: %(bar)s %(percent)3d%%'
     FULL = '%(bar)s %(current)d/%(total)d (%(percent)3d%%) %(remaining)d to go'
@@ -28,8 +25,7 @@ class ProgressBar(object):
         self.total = total
         self.width = width
         self.symbol = symbol
-        self.fmt = re.sub(r'(?P<name>%\(.+?\))d',
-            r'\g<name>%dd' % len(str(total)), fmt)
+        self.fmt = re.sub(r'(?P<name>%\(.+?\))d', r'\g<name>%dd' % len(str(total)), fmt)
 
         self.current = 0
 
@@ -54,6 +50,7 @@ class ProgressBar(object):
         self.update(step=0)
         print('')
 
+
 # Read image files            
 class ImageCoder(object):
     
@@ -77,7 +74,7 @@ class ImageCoder(object):
                               feed_dict={self._png_data: image_data})
         
     def decode_jpeg(self, image_data):
-        image = self._sess.run(self.crop, #self._decode_jpeg,
+        image = self._sess.run(self.crop,  # self._decode_jpeg,
                                feed_dict={self._decode_jpeg_data: image_data})
 
         assert len(image.shape) == 3
@@ -93,7 +90,8 @@ def _is_png(filename):
     boolean indicating if the image is a PNG.
     """
     return '.png' in filename
-        
+
+
 def make_multi_image_batch(filenames, coder):
     """Process a multi-image batch, each with a single-look
     Args:
@@ -120,6 +118,7 @@ def make_multi_image_batch(filenames, coder):
         images.append(image)
     image_batch = tf.stack(images)
     return image_batch
+
 
 def make_multi_crop_batch(filename, coder):
     """Process a single image file.
@@ -151,7 +150,7 @@ def make_multi_crop_batch(filename, coder):
     crops.append(standardize_image(crop))
     crops.append(tf.image.flip_left_right(crop))
 
-    corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
+    corners = [(0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
     for corner in corners:
         ch, cw = corner
         cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
@@ -161,7 +160,6 @@ def make_multi_crop_batch(filename, coder):
 
     image_batch = tf.stack(crops)
     return image_batch
-
 
 
 def face_detection_model(model_type, model_path):
