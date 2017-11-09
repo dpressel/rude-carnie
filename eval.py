@@ -130,15 +130,15 @@ def eval_once(saver, summary_writer, summary_op, logits, labels, num_eval, reque
 
             # Compute precision @ 1.
 
-            precision1 = true_count1 / total_sample_count
-            precision2 = true_count2 / total_sample_count
-            print('%s: precision @ 1 = %.3f (%d/%d)' % (datetime.now(), precision1, true_count1, total_sample_count))
-            print('%s: precision @ 2 = %.3f (%d/%d)' % (datetime.now(), precision2, true_count2, total_sample_count))
+            at1 = true_count1 / total_sample_count
+            at2 = true_count2 / total_sample_count
+            print('%s: precision @ 1 = %.3f (%d/%d)' % (datetime.now(), at1, true_count1, total_sample_count))
+            print('%s:    recall @ 2 = %.3f (%d/%d)' % (datetime.now(), at2, true_count2, total_sample_count))
 
             summary = tf.Summary()
             summary.ParseFromString(sess.run(summary_op))
-            summary.value.add(tag='Precision @ 1', simple_value=precision1)
-            summary.value.add(tag='Precision @ 2', simple_value=precision2)
+            summary.value.add(tag='Precision @ 1', simple_value=at1)
+            summary.value.add(tag='   Recall @ 2', simple_value=at2)
             summary_writer.add_summary(summary, global_step)
         except Exception as e:  # pylint: disable=broad-except
             coord.request_stop(e)
