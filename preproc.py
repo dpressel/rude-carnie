@@ -301,7 +301,7 @@ def main(unused_argv):
                      FLAGS.train_shards)
     
     if len(valid_outcomes) != len(valid_outcomes | train_outcomes):
-        print('Warning: unattested labels in training data [%s]' % (', '.join(valid_outcomes | train_outcomes) - valid_outcomes))
+        print('Warning: unattested labels in training data [%s]' % (', '.join((valid_outcomes | train_outcomes) - valid_outcomes)))
         
     output_file = os.path.join(FLAGS.output_dir, 'md.json')
 
