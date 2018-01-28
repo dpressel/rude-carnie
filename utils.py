@@ -72,14 +72,66 @@ class ImageCoder(object):
         self._decode_jpeg = tf.image.decode_jpeg(self._decode_jpeg_data, channels=3)
         self.crop = tf.image.resize_images(self._decode_jpeg, (RESIZE_AOI, RESIZE_AOI))
 
+        ''' Added to handle memory leak-single look '''
+        self.crop_image = tf.image.resize_images(self.crop, (RESIZE_FINAL, RESIZE_FINAL))
+        self.image_standradisation = tf.image.per_image_standardization(self.crop_image)
+	    self.num_img = None
+        self.images_single = tf.placeholder(dtype=tf.float32, shape=(self.num_img, 227, 227, 3))
+        self.image_batch_single = tf.stack(self.images_single)
+	       
+        '''Added to handle memory leak-multi look'''                
+        self.standardize_image_holder = tf.placeholder(dtype=tf.float32, shape=(227, 227, 3))
+        self.flipped_image_holder = tf.placeholder(dtype=tf.float32, shape=(227, 227, 3))
+
+        self.image_standradisation_multi = tf.image.per_image_standardization(self.standardize_image_holder)
+        self.flipped_img_multi = tf.image.flip_left_right(self.flipped_image_holder)
+        
+        self.ch = tf.placeholder(tf.int32)
+        self.cw = tf.placeholder(tf.int32)
+        
+        self.cropped_boundingbox = tf.image.crop_to_bounding_box(self.crop, self.ch, self.cw, RESIZE_FINAL, RESIZE_FINAL)
+        
+        self.images_multi = tf.placeholder(dtype=tf.float32, shape=(12, 227, 227, 3))
+        self.image_batch_mult = tf.stack(self.images_multi)
+    
+    def run_stack(self, images_array):
+    	return self._sess.run(self.image_batch_single, feed_dict={self.images_single: images_array})   
+	    
     def png_to_jpeg(self, image_data):
         return self._sess.run(self._png_to_jpeg,
                               feed_dict={self._png_data: image_data})
         
-    def decode_jpeg(self, image_data):
-        image = self._sess.run(self.crop, #self._decode_jpeg,
+    def decode_jpeg(self, image_data, look):
+        if look == 'single':
+            return self._sess.run(self.image_standradisation, #self._decode_jpeg,
+                                   feed_dict={self._decode_jpeg_data: image_data})
+                    
+        elif look == 'multi':
+            image = self._sess.run(self.crop, #self._decode_jpeg,
                                feed_dict={self._decode_jpeg_data: image_data})
+            crops = []
+            h = image.shape[0]
+            w = image.shape[1]
+            hl = h - RESIZE_FINAL
+            wl = w - RESIZE_FINAL
 
+            crop = self._sess.run(self.crop_image, feed_dict={self._decode_jpeg_data: image_data})
+            standardizeImage = self._sess.run(self.image_standradisation_multi, feed_dict={self.standardize_image_holder: crop})
+            crops.append(standardizeImage)
+            flippedImage = self._sess.run(self.flipped_img_multi, feed_dict={self.flipped_image_holder: crop})
+            crops.append(flippedImage)
+
+            corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
+            for corner in corners:
+                ch, cw = corner
+                cropped = self._sess.run(self.cropped_boundingbox, feed_dict={self._decode_jpeg_data: image_data, self.ch: ch, self.cw: cw})
+                standardizeImage_2 = self._sess.run(self.image_standradisation_multi, feed_dict={self.standardize_image_holder: cropped})
+                crops.append(standardizeImage_2)
+                flippedImage_2 = self._sess.run(self.flipped_img_multi, feed_dict={self.flipped_image_holder: cropped})
+                crops.append(flippedImage_2)
+
+            return self._sess.run(self.image_batch_mult, feed_dict={self.images_multi: crops})
+            
         assert len(image.shape) == 3
         assert image.shape[2] == 3
         return image
@@ -94,7 +146,7 @@ def _is_png(filename):
     """
     return '.png' in filename
         
-def make_multi_image_batch(filenames, coder):
+def make_multi_image_batch(filenames, coder, number_of_images):
     """Process a multi-image batch, each with a single-look
     Args:
     filenames: list of paths
@@ -102,23 +154,20 @@ def make_multi_image_batch(filenames, coder):
     Returns:
     image_buffer: string, JPEG encoding of RGB image.
     """
-
     images = []
-
+    coder.num_img = number_of_images
     for filename in filenames:
-        with tf.gfile.FastGFile(filename, 'rb') as f:
-            image_data = f.read()
-        # Convert any PNG to JPEG's for consistency.
-        if _is_png(filename):
-            print('Converting PNG to JPEG for %s' % filename)
-            image_data = coder.png_to_jpeg(image_data)
+    	with tf.gfile.FastGFile(filename, 'rb') as f:
+                image_data = f.read()
+            # Convert any PNG to JPEG's for consistency.
+            if _is_png(filename):
+                print('Converting PNG to JPEG for %s' % filename)
+                image_data = coder.png_to_jpeg(image_data)
+        
+            image = coder.decode_jpeg(image_data, 'single')
+            images.append(image)
+    image_batch = coder.run_stack(images) 
     
-        image = coder.decode_jpeg(image_data)
-
-        crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-        image = standardize_image(crop)
-        images.append(image)
-    image_batch = tf.stack(images)
     return image_batch
 
 def make_multi_crop_batch(filename, coder):
@@ -138,31 +187,9 @@ def make_multi_crop_batch(filename, coder):
         print('Converting PNG to JPEG for %s' % filename)
         image_data = coder.png_to_jpeg(image_data)
     
-    image = coder.decode_jpeg(image_data)
+    image = coder.decode_jpeg(image_data, 'multi')
 
-    crops = []
-    print('Running multi-cropped image')
-    h = image.shape[0]
-    w = image.shape[1]
-    hl = h - RESIZE_FINAL
-    wl = w - RESIZE_FINAL
-
-    crop = tf.image.resize_images(image, (RESIZE_FINAL, RESIZE_FINAL))
-    crops.append(standardize_image(crop))
-    crops.append(tf.image.flip_left_right(crop))
-
-    corners = [ (0, 0), (0, wl), (hl, 0), (hl, wl), (int(hl/2), int(wl/2))]
-    for corner in corners:
-        ch, cw = corner
-        cropped = tf.image.crop_to_bounding_box(image, ch, cw, RESIZE_FINAL, RESIZE_FINAL)
-        crops.append(standardize_image(cropped))
-        flipped = tf.image.flip_left_right(cropped)
-        crops.append(standardize_image(flipped))
-
-    image_batch = tf.stack(crops)
-    return image_batch
-
-
+    return image   
 
 def face_detection_model(model_type, model_path):
     model_type_lc = model_type.lower()

@@ -38,7 +38,7 @@ tf.app.flags.DEFINE_string('target', '',
 tf.app.flags.DEFINE_string('checkpoint', 'checkpoint',
                           'Checkpoint basename')
 
-tf.app.flags.DEFINE_string('model_type', 'default',
+tf.app.flags.DEFINE_string('model_type', 'inception',
                            'Type of convnet')
 
 tf.app.flags.DEFINE_string('requested_step', '', 'Within the model directory, a requested step to restore e.g., 9000')
@@ -62,21 +62,20 @@ def resolve_file(fname):
             return cand
     return None
 
-
 def classify_many_single_crop(sess, label_list, softmax_output, coder, images, image_files, writer):
     try:
-        num_batches = math.ceil(len(image_files) / MAX_BATCH_SZ)
-        pg = ProgressBar(num_batches)
-        for j in range(num_batches):
-            start_offset = j * MAX_BATCH_SZ
+        num_batches = math.ceil(len(image_files) / MAX_BATCH_SZ)	
+        pg = ProgressBar(int(num_batches))
+        for j in range(int(num_batches)):
+	    start_offset = j * MAX_BATCH_SZ
             end_offset = min((j + 1) * MAX_BATCH_SZ, len(image_files))
             
             batch_image_files = image_files[start_offset:end_offset]
             print(start_offset, end_offset, len(batch_image_files))
-            image_batch = make_multi_image_batch(batch_image_files, coder)
-            batch_results = sess.run(softmax_output, feed_dict={images:image_batch.eval()})
+            image_batch = make_multi_image_batch(batch_image_files, coder, len(batch_image_files))
+            batch_results = sess.run(softmax_output, feed_dict={images:image_batch})
             batch_sz = batch_results.shape[0]
-            for i in range(batch_sz):
+	    for i in range(batch_sz):
                 output_i = batch_results[i]
                 best_i = np.argmax(output_i)
                 best_choice = (label_list[best_i], output_i[best_i])
@@ -92,11 +91,10 @@ def classify_many_single_crop(sess, label_list, softmax_output, coder, images, i
 
 def classify_one_multi_crop(sess, label_list, softmax_output, coder, images, image_file, writer):
     try:
-
         print('Running file %s' % image_file)
         image_batch = make_multi_crop_batch(image_file, coder)
 
-        batch_results = sess.run(softmax_output, feed_dict={images:image_batch.eval()})
+        batch_results = sess.run(softmax_output, feed_dict={images:image_batch})
         output = batch_results[0]
         batch_sz = batch_results.shape[0]
     
@@ -199,7 +197,7 @@ def main(argv=None):  # pylint: disable=unused-argument
             else:
                 for image_file in image_files:
                     classify_one_multi_crop(sess, label_list, softmax_output, coder, images, image_file, writer)
-
+		    
             if output is not None:
                 output.close()
         
