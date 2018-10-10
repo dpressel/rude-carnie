@@ -189,7 +189,9 @@ $ python train.py --train_dir /home/dpressel/dev/work/AgeGenderDeepLearning/Fold
 
 You can get the inception_v3.ckpt like so:
 
-https://github.com/tensorflow/models/tree/master/im2txt#download-the-inception-v3-checkpoint
+```
+$ wget http://download.tensorflow.org/models/inception_v3_2016_08_28.tar.gz
+```
 
 #### Monitoring the training
 
