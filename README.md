@@ -109,11 +109,11 @@ Guess @ 1 M, prob = 0.99
 ### Pre-trained Checkpoints
 You can find a pre-trained age checkpoint for inception here:
 
-https://drive.google.com/drive/folders/0B8N1oYmGLVGWbDZ4Y21GLWxtV1E
+https://drive.google.com/drive/folders/0B8N1oYmGLVGWRDM3Njc5UFYwdjQ?resourcekey=0-F1sj-GdifeLozmvBnBxZaA&usp=sharing
 
 A pre-trained gender checkpoint for inception is available here:
 
-https://drive.google.com/drive/folders/0B8N1oYmGLVGWemZQd3JMOEZvdGs
+https://drive.google.com/drive/folders/0B8N1oYmGLVGWZVE1a3haVnBsLUU?resourcekey=0-aPYeOSnbLqaHq2vmcNzd6Q&usp=sharing
 
 ### Training
 
